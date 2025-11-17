@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 export const AppContext = createContext();
 
 export function AppContextProvider({children}) {
-    const currency = import.meta.VITE_CURRENCY;
+    const currency = import.meta.env.VITE_CURRENCY;
 
     const navigate = useNavigate()
     const [user, setUser] = useState(null)
@@ -14,7 +14,7 @@ export function AppContextProvider({children}) {
     const [showUserLogin, setShowUserLogin] = useState(false)
     const [products, setProducts] = useState([])
     const [cartItems, setCartItems] = useState({})
-    const [searchQuery, setSearchQuery] = useState({})
+    const [searchQuery, setSearchQuery] = useState("")
 
     // Fetch all products
     const fetchProducts = async() => {
@@ -27,13 +27,12 @@ const addToCart = (itemId) => {
         if(cartData[itemId]){
             cartData[itemId] += 1;
         }else{
-            cartData[itemId]
+            cartData[itemId] = 1
         }
 
         setCartItems(cartData)
         toast.success("Added to Cart")
     }
-
 
 // Update Cart item quantity
 const updateCartItem = (itemId, quantity) => {
@@ -55,7 +54,7 @@ const removeFromCart = (itemId) => {
         toast.success("Removed from Cart")
         setCartItems(cartData)
     }
-    //get cart item count
+//get cart item count
     const getCartCount = () => {
         let totalCount = 0;
         for (const item in cartItems){
@@ -64,8 +63,8 @@ const removeFromCart = (itemId) => {
         return totalCount;
     }
 
-    // get cart total amount
-    const getCartAmount = () => {
+// get cart total amount
+const getCartAmount = () => {
         let totalAmount = 0;
         for (const items in cartItems){
             let itemInfo = products.find((product) => product._id === items);
