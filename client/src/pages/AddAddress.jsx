@@ -28,7 +28,7 @@ export default function AddAddress() {
     const handleChange = (e) => {
         const {name, value} = e.target;
         setAddress((prevAddress) => ({
-            ...AddAddress,
+            ...prevAddress,
             [name] : value,
         }))
     }
