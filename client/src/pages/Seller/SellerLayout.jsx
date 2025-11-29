@@ -34,7 +34,7 @@ export default function SellerLayout(){
                 {sidebarLinks.map((item, index) => (
                     <NavLink to={item.path} key={item.name} end={item.path === "/seller"}
                         className={({isActive}) => `flex items-center py-3 px-4 gap-3 
-                            ${isActive ? "border-r-4 md:border-r-[6px] bg-primary border-primary text-primary"
+                            ${isActive? "border-r-4 md:border-r-[6px] bg-primary/10 border-primary text-primary"
                                 : "hover:bg-gray-100/90 border-white"
                             }`
                         }
