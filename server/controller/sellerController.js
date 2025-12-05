@@ -33,4 +33,18 @@ export const isSellerAuth = async (req, res) => {
     }
 }
 
+// Logout User: /api/user/logout
+export const logout = async (req, res) => {
+    try{
+        res.clearCookie('sellerToken', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV == 'production'? 'node' : 'strict'
+        })
+        return res.json({success: true, message: "Logged out"})
+    } catch(error){
+        console.log(error.message);
+        res.json({success: false, message: error.message})
+    }
+}
 
