@@ -18,12 +18,15 @@ await connectDB()
 await connectCloudinary()
 
 // Allow multiple origins
-const allowedOrigins = ['http://localhost:5173/']
+const allowedOrigins = ['http://localhost:5173']
 
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({origin: allowedOrigins, Credential: true}));
+app.use(cors({
+    origin: allowedOrigins, 
+    credentials: true,   
+    allowedHeaders: ["Content-Type"]}));
 
 app.get('/', (req, res) => res.send("API is working"))
 app.use('/api/user', userRouter)
