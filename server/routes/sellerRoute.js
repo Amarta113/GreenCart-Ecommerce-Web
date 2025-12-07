@@ -1,5 +1,5 @@
 import express from 'express'
-import { isSellerAuth, sellerLogin, sellerLogout } from '../controller/sellerController';
+import { isSellerAuth, sellerLogin, sellerLogout } from '../controller/sellerController.js';
 import { authSeller } from '../middlewares/authSeller.js';
 
 const sellerRouter = express.Router();

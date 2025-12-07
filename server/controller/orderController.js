@@ -1,7 +1,7 @@
 // Place order cod: /api/order/cod
 
-import Order from "../models/Orders"
-import Product from "../models/Product"
+import Order from "../models/Orders.js"
+import Product from "../models/Product.js"
 
 export const placeOrderCOD = async(req, res) => {
     try{

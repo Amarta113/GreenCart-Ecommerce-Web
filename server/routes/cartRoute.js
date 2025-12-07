@@ -1,8 +1,8 @@
-import mongoose from 'mongoose'
+import {Router} from 'express'
 import authUser from '../middlewares/authUser.js'
 import { updateCart } from '../controller/cartController.js'
 
-const cartRouter = mongoose.Router()
+const cartRouter = Router()
 
 cartRouter.post('/update', authUser, updateCart)
 
