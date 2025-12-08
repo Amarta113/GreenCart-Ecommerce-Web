@@ -33,12 +33,25 @@ export function AppContextProvider({children}) {
             setIsSeller(false)
         }
     }
+// fetch user auth status
+const fetchUser = async() => {
+    try{
+        const {data} = await axios.get('/api/user/is-auth')
+        if (data.success){
+            setUser(data.user)
+            setCartItems(data.user.cartItems)
+        }
+    } catch(error){
+        setUser(null)
+    }
+}
+
     // Fetch all products
     const fetchProducts = async() => {
         try{
             const {data} = await axios.get('/api/product/list')
             if(data.success){
-                setProducts(data.product)
+                setProducts(data.products)
             }else {
                 toast.error(data.message)
             }
@@ -102,6 +115,7 @@ const getCartAmount = () => {
     }
 
     useEffect(() => {
+        fetchUser()
         fetchSeller()
         fetchProducts()
     }, [])
