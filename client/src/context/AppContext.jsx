@@ -35,7 +35,16 @@ export function AppContextProvider({children}) {
     }
     // Fetch all products
     const fetchProducts = async() => {
-        setProducts(dummyProducts)
+        try{
+            const {data} = await axios.get('/api/product/list')
+            if(data.success){
+                setProducts(data.product)
+            }else {
+                toast.error(data.message)
+            }
+        } catch(error) {
+                toast.error(error.message)
+        }
     }
 
 // Add product to cart
@@ -97,7 +106,7 @@ const getCartAmount = () => {
         fetchProducts()
     }, [])
 
-    const value = {navigate, user, setUser, setIsSeller, isSeller, showUserLogin, setShowUserLogin, products, currency, addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery, getCartAmount, getCartCount, axios}
+    const value = {navigate, user, setUser, setIsSeller, isSeller, showUserLogin, setShowUserLogin, products, currency, addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery, getCartAmount, getCartCount, axios, fetchProducts}
     return (<AppContext.Provider value={value}>
         {children}
     </AppContext.Provider>)
