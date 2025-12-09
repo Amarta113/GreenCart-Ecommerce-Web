@@ -20,8 +20,8 @@ export function AppContextProvider({children}) {
     const [cartItems, setCartItems] = useState({})
     const [searchQuery, setSearchQuery] = useState("")
 
-    // Fetch seller status
-    const fetchSeller = async() => {
+// Fetch seller status
+const fetchSeller = async() => {
         try{
             const {data} = await axios.get('/api/seller/is-auth')
             if(data.success){
@@ -33,7 +33,8 @@ export function AppContextProvider({children}) {
             setIsSeller(false)
         }
     }
-// fetch user auth status
+
+// Fetch user auth status
 const fetchUser = async() => {
     try{
         const {data} = await axios.get('/api/user/is-auth')
@@ -42,17 +43,17 @@ const fetchUser = async() => {
             setCartItems(data.user.cartItems)
         }
     } catch(error){
-        setUser(null)
+         setUser(null)
     }
 }
 
-    // Fetch all products
-    const fetchProducts = async() => {
+// Fetch all products
+const fetchProducts = async() => {
         try{
             const {data} = await axios.get('/api/product/list')
             if(data.success){
                 setProducts(data.products)
-            }else {
+            } else {
                 toast.error(data.message)
             }
         } catch(error) {
@@ -68,7 +69,6 @@ const addToCart = (itemId) => {
         }else{
             cartData[itemId] = 1
         }
-
         setCartItems(cartData)
         toast.success("Added to Cart")
     }
