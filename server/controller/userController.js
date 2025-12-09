@@ -40,12 +40,12 @@ export const login = async(req, res) => {
         const user = await User.findOne({email});
 
         if(!user){
-            return res.json({success: false, message: "Email and password are required."});
+            return res.json({success: false, message: "Invalid email and password"});
         }
 
         const isMatch = await bcrypt.compare(password, user.password)
         if (!isMatch){
-            return res.json({success: false, message: "Email and password are required."});
+            return res.json({success: false, message: "Invalid email and password."});
         }
 
         const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'})
@@ -60,7 +60,7 @@ export const login = async(req, res) => {
 
     catch (error){
         console.log(error.message)
-        res.json({success: false, message: error.message})
+        return res.json({success: false, message: error.message})
     }
 }
 
@@ -73,12 +73,11 @@ export const isAuth = async(req, res) => {
         return res.json({success: true, user})
     } catch(error){
         console.log(error.message)
-        res.json({success: false, message: error.message})
+        return res.json({success: false, message: error.message})
     }
 }
 
 // logout user : /api/user/logout
-
 export const logout = async(req, res) => {
     try{
         res.clearCookie('token', {
@@ -89,6 +88,6 @@ export const logout = async(req, res) => {
         return res.json({success: true, message: 'Logged out'})
     }catch(error){
         console.log(error.message)
-        res.json({success: false, message: error.message})
+        return res.json({success: false, message: error.message})
     }
 }
