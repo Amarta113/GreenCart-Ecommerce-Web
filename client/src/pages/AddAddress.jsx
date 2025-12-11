@@ -1,7 +1,10 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { assets } from '../assets/assets'
+import { useAppContext } from '../context/AppContext'
+import toast from 'react-hot-toast'
 
 const InputField = ({type, placeholder, name, handleChange, address}) => (
+    
     <input className='w-full px-2 py-2.5 border border-gray-500/30 rounded outline-none text-gray-500 focus:border-primary transition'
     type={type}
     placeholder={placeholder}
@@ -13,6 +16,7 @@ const InputField = ({type, placeholder, name, handleChange, address}) => (
 )
 
 export default function AddAddress() {
+    const {axios, user, navigate} = useAppContext()
     const [address, setAddress] = useState({
         firstName: '',
         lastName: '',
@@ -34,8 +38,52 @@ export default function AddAddress() {
     }
 
     const onSubmitHandler = async(e) => {
-        e.preventDefault();  
+        e.preventDefault();
+        if(!user?._id){
+            toast.error("Please login to save an address");
+            navigate('/cart');
+            return;
+        }
+
+        // Basic required-field validation to prevent empty payloads
+        const requiredFields = ['firstName','lastName','email','street','city','state','zipcode','country','phone'];
+        const hasEmpty = requiredFields.some((field) => !`${address[field] ?? ''}`.trim());
+        if(hasEmpty){
+            toast.error("Please fill all address fields.");
+            return;
+        }
+
+        // Trim string fields before sending
+        const payload = Object.keys(address).reduce((acc, key) => {
+            acc[key] = typeof address[key] === 'string' ? address[key].trim() : address[key];
+            return acc;
+        }, {});
+
+        try {
+            const {data} = await axios.post('/api/address/add',{
+                    address: {
+                        ...payload,
+                        // ensure zipcode is numeric to match backend schema
+                        zipcode: Number(payload.zipcode)
+                    },
+                    userId: user._id
+                })
+            if(data.success){
+                toast.success("Address saved");
+                navigate('/cart')
+            } else {
+                toast.error(data.message)
+            }
+        } catch(error) {
+            toast.error(error.message)
+        }  
     }
+
+    useEffect(() => {
+        if(!user){
+            navigate('/cart')
+        }
+    }, [user])
 
     return (<div className='mt-16 pb-16'>
         <p className='text-2xl md:text-3xl text-gray-500'>Add Shipping <span className='font-semibold text-primary'>Address</span></p>
@@ -44,7 +92,7 @@ export default function AddAddress() {
                 <form onSubmit={onSubmitHandler} className='space-y-3 mt-6 text-sm'>
                     
                     <div className='grid grid-cols-2 gap-4'>
-                        <InputField type="text" placeholder="First Name" name='firstname'
+                        <InputField type="text" placeholder="First Name" name='firstName'
                         handleChange={handleChange} address={address}/>
                         <InputField type="text" placeholder="Last Name" name='lastName' handleChange={handleChange}
                         address={address}/>
@@ -66,7 +114,7 @@ export default function AddAddress() {
                         address={address}/>
                     </div>
                     <InputField handleChange={handleChange} address={address} name='phone' type='text' placeholder="Phone" />
-                    <button className='w-full mt-6 bg-primary text-white py-3 hover:bg-primary-dull transition cursor-pointer uppercase'>Save Address</button>
+                    <button type='submit' className='w-full mt-6 bg-primary text-white py-3 hover:bg-primary-dull transition cursor-pointer uppercase'>Save Address</button>
                 </form>
             </div>
             <img className='md:mr-16 mb-16 md:mt-0' src={assets.add_address_iamge} alt="Add address"/>
