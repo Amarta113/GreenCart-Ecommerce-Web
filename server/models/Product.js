@@ -6,8 +6,8 @@ const productSchema = new mongoose.Schema({
     price: {type: Number, required: true},
     offerPrice: {type: Number, default: true},
     image: {type: Array, required: true},
-    category: {type: Array, required: true},
-    inStock: {type: Object, default: true}
+    category: {type: String, required: true},
+    inStock: {type: Boolean, default: true}
 }, {timestamps: true})
 
 const Product = mongoose.models.product || mongoose.model('product', productSchema)
