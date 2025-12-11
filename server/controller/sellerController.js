@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken"
 export const sellerLogin = async(req, res) => {
     try{
     const {email, password} = req.body
+    
     if(password === process.env.SELLER_PASSWORD && email === process.env.SELLER_EMAIL){
         const token = jwt.sign({email}, process.env.JWT_SECRET, {expiresIn: '7d'});
         res.cookie('sellerToken', token, {
@@ -15,6 +16,7 @@ export const sellerLogin = async(req, res) => {
     }else {
         return res.json({success: false, message: 'Invalid Credentials'})
     }
+
     } catch(error) {
         console.log(error.message)
         res.json({success: false, message: error.message})
@@ -22,7 +24,7 @@ export const sellerLogin = async(req, res) => {
 }
 
 
-// Seller auth: /api/user/is-auth
+// Seller auth: /api/seller/is-auth
 export const isSellerAuth = async (req, res) => {
     try{
         return res.json({success: true})
@@ -33,13 +35,13 @@ export const isSellerAuth = async (req, res) => {
     }
 }
 
-// Logout User: /api/user/logout
+// Logout Seller: /api/seller/logout
 export const sellerLogout = async (req, res) => {
     try{
         res.clearCookie('sellerToken', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV == 'production'? 'node' : 'strict'
+            sameSite: process.env.NODE_ENV == 'production'? 'none' : 'strict'
         })
         return res.json({success: true, message: "Logged out"})
     } catch(error){
