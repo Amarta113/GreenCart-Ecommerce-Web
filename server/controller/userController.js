@@ -1,17 +1,21 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
+import { catchAsyncError } from '../middlewares/catchAsyncError.js';
+import ErrorHandler from '../middlewares/error.js';
 
 // Register user 
-export const register = async(req, res) => {
+export const register = catchAsyncError(async(req, res, next) => {
     try {
         const {name, email, password} = req.body;
         if(!name || !email || !password){
-            return res.json({success:false, message: "Missing Details"})
+            //return res.json({success:false, message: "Missing Details"})
+            return next(new ErrorHandler('All fields are required', 400))
         }  
         const existingUser = await User.findOne({email})
         if(existingUser){
             return res.json({success: false, message: 'User already exists'})
+            //return next(new ErrorHandler('User already exists', 400))
         }
         const hashedPassword = await bcrypt.hash(password, 10)
         const user = await User.create({name, email, password: hashedPassword})
@@ -25,9 +29,10 @@ export const register = async(req, res) => {
         return res.json({success: true, user: {email: user.email, name: user.name}})
     } catch(error){
         console.log(error.message)
-        res.json({success: false, message: error.message})
+        //res.json({success: false, message: error.message})
+        next(error)
     }
-}
+})
 
 // Login user: /api/user/login
 export const login = async(req, res) => {
@@ -42,12 +47,10 @@ export const login = async(req, res) => {
         if(!user){
             return res.json({success: false, message: "Invalid email and password"});
         }
-
         const isMatch = await bcrypt.compare(password, user.password)
         if (!isMatch){
             return res.json({success: false, message: "Invalid email and password."});
         }
-
         const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'})
         res.cookie('token', token, {
             httpOnly: true,
@@ -65,10 +68,9 @@ export const login = async(req, res) => {
 }
 
 // Check auth: 
-
 export const isAuth = async(req, res) => {
     try{
-        const {userId} = req;
+        const userId = req.userId;
         const user = await User.findById(userId).select("-password")
         return res.json({success: true, user})
     } catch(error){
@@ -83,10 +85,10 @@ export const logout = async(req, res) => {
         res.clearCookie('token', {
             httpOnly: true,
             secure: process.env.NODE_ENV=== 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'node' : 'strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         })
         return res.json({success: true, message: 'Logged out'})
-    }catch(error){
+    } catch(error){
         console.log(error.message)
         return res.json({success: false, message: error.message})
     }
