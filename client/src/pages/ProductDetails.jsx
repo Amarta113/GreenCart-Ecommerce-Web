@@ -5,7 +5,7 @@ import { assets } from '../assets/assets'
 import ProductCard from '../components/ProductCard'
 
 export default function ProductDetails(){
-    const {products, navigate, currency, addToCart} = useAppContext()
+    const {products, navigate, currency, addToCart, user, setShowUserLogin} = useAppContext()
     const {id} = useParams()
     const [thumbnail, setThumbnail] = React.useState(null)
     const product = products.find((item) => item._id === id);
@@ -74,7 +74,14 @@ export default function ProductDetails(){
                         <button onClick={() => addToCart(product._id)} className="w-full py-3.5 cursor-pointer font-medium bg-gray-100 text-gray-800/80 hover:bg-gray-200 transition" >
                             Add to Cart
                         </button>
-                        <button onClick={() => {addToCart(product._id); navigate('/cart')}} className="w-full py-3.5 cursor-pointer font-medium bg-primary text-white hover:bg-primary-dull transition" >
+                        <button 
+                        onClick={() => {
+                                    if (!user) {
+                                        setShowUserLogin(true);
+                                        return;
+                                    }
+                            addToCart(product._id); navigate('/cart')}} 
+                        className="w-full py-3.5 cursor-pointer font-medium bg-primary text-white hover:bg-primary-dull transition" >
                             Buy now
                         </button>
                     </div>
