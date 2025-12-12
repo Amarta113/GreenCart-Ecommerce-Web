@@ -4,7 +4,7 @@ import { assets, dummyAddress } from '../assets/assets'
 import toast from 'react-hot-toast'
 
 export default function Cart (){
-    const {products, currency, cartItems, removeFromCart, getCartCount, updateCartItem, navigate, getCartAmount, axios, user} = useAppContext()
+    const {products, currency, cartItems, removeFromCart, getCartCount, updateCartItem, navigate, getCartAmount, axios, user, setCartItems} = useAppContext()
     const [cartArray, setCartArray] = useState([])
     const [addresses, setAddresses] = useState([])
     const [showAddress, setShowAddress] = useState(false)
@@ -36,7 +36,32 @@ export default function Cart (){
         }
     }
     const placeOrder = async() => {
+        try{
+            if(!selectedAddress){
+                return toast.error('Please select an address')
+            }
 
+            let data;
+
+            // place order with cod
+            if(paymentOption === 'COD'){
+                ({data} = await axios.post('/api/order/cod', {
+                    items: cartArray.map(item => ({product: item._id, quantity: item.quantity})),
+                    address: selectedAddress._id
+                }))
+            }
+
+            if(data?.success){
+                toast.success(data.message)
+                setCartItems({})
+                navigate('/my-orders')
+            }else {
+                toast.error(data?.message || 'Unable to place order')
+            }
+        }
+        catch(error){
+            toast.error(error.message)
+        }
     } 
 
     
