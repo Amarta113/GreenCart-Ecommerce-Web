@@ -17,23 +17,47 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 // Initialize database and cloudinary connections
-// Wrap in async function for Vercel serverless compatibility
-(async () => {
-    try {
-        await connectDB();
-        await connectCloudinary();
-    } catch (error) {
-        console.error('Initialization error:', error);
-    }
-})();
+// For Vercel serverless: connections are lazy-loaded on first request
+let dbConnected = false;
+let cloudinaryConnected = false;
 
-// Allow multiple origins
-const allowedOrigins = ['http://localhost:5173']
+const initializeConnections = async () => {
+    if (!dbConnected) {
+        try {
+            await connectDB();
+            dbConnected = true;
+        } catch (error) {
+            console.error('Database connection error:', error);
+        }
+    }
+    if (!cloudinaryConnected) {
+        try {
+            await connectCloudinary();
+            cloudinaryConnected = true;
+        } catch (error) {
+            console.error('Cloudinary connection error:', error);
+        }
+    }
+};
+
+// Allow multiple origins - include Vercel frontend URL
+const allowedOrigins = [
+    'http://localhost:5173',
+    process.env.FRONTEND_URL,
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+    // Allow any Vercel preview/deployment URL
+    /^https:\/\/.*\.vercel\.app$/
+].filter(Boolean);
 
 // Stripe webhook endpoint - must use raw body for signature verification
 app.post('/stripe', express.raw({type:"application/json"}), stripeWebhooks)
 
-// Middleware
+// Middleware - initialize connections before handling requests
+app.use(async (req, res, next) => {
+    await initializeConnections();
+    next();
+});
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
