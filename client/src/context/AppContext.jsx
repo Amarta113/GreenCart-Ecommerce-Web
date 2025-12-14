@@ -142,11 +142,6 @@ const getCartAmount = () => {
     }, [])
 
     useEffect(() => {
-        // Don't run during initialization
-        if (isInitializing.current) {
-            return;
-        }
-
         // Early return: Don't update cart if seller is logged in or user is not logged in
         if (isSeller || !user) {
             return;
