@@ -13,7 +13,7 @@ export function AppContextProvider({children}) {
     const currency = import.meta.env.VITE_CURRENCY;
 
     const navigate = useNavigate()
-    const [user, setUser] = useState(true)
+    const [user, setUser] = useState(null)
     const [isSeller, setIsSeller] = useState(false)
     const [showUserLogin, setShowUserLogin] = useState(false)
     const [products, setProducts] = useState([])
@@ -26,11 +26,14 @@ const fetchSeller = async() => {
             const {data} = await axios.get('/api/seller/is-auth')
             if(data.success){
                 setIsSeller(true)
+                return true
             }else {
                 setIsSeller(false)
+                return false
             }
         } catch(error) {
             setIsSeller(false)
+            return false
         }
     }
 
@@ -43,7 +46,13 @@ const fetchUser = async() => {
             setCartItems(data.user.cartItems)
         }
     } catch(error){
-         setUser(null)
+        // Silently handle 401 errors (expected when not logged in as user)
+        // Only set user to null if it's not a 401, or if it's 401 but we're not in seller mode
+        if (error.response?.status === 401) {
+            setUser(null)
+        } else {
+            setUser(null)
+        }
     }
 }
 
@@ -115,8 +124,15 @@ const getCartAmount = () => {
     }
 
     useEffect(() => {
-        fetchUser()
-        fetchSeller()
+        // Fetch seller status first, then conditionally fetch user
+        const initializeAuth = async () => {
+            const sellerStatus = await fetchSeller()
+            // Only fetch user if not a seller (sellers don't have user tokens)
+            if (!sellerStatus) {
+                fetchUser()
+            }
+        }
+        initializeAuth()
         fetchProducts()
     }, [])
 
@@ -128,15 +144,20 @@ const getCartAmount = () => {
                     toast.error(data.message)
                 }
             } catch (error) {
-                toast.error(error.message)
+                // Silently handle 401 errors (expected when not logged in as user or when seller is logged in)
+                if (error.response?.status !== 401) {
+                    toast.error(error.message)
+                }
             }
         }
 
-        if(user){
+        // Only update cart if user is logged in AND not a seller
+        // Sellers don't have user tokens, so cart updates will fail for them
+        if(user && !isSeller){
             updateCart()
         }
 
-    }, [cartItems])
+    }, [cartItems, user, isSeller])
 
     const value = {navigate, user, setUser, setIsSeller, isSeller, showUserLogin, setShowUserLogin, products, currency, addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery, getCartAmount, getCartCount, axios, fetchProducts, setCartItems}
     return (<AppContext.Provider value={value}>
