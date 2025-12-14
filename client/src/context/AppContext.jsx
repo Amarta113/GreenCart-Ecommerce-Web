@@ -26,6 +26,9 @@ const fetchSeller = async() => {
             const {data} = await axios.get('/api/seller/is-auth')
             if(data.success){
                 setIsSeller(true)
+                // Clear user state when seller logs in (sellers don't have user tokens)
+                setUser(null)
+                setCartItems({})
                 return true
             }else {
                 setIsSeller(false)
@@ -39,20 +42,22 @@ const fetchSeller = async() => {
 
 // Fetch user auth status
 const fetchUser = async() => {
+    // Don't fetch user if seller is already logged in
+    if (isSeller) {
+        setUser(null)
+        return
+    }
+    
     try{
         const {data} = await axios.get('/api/user/is-auth')
         if (data.success){
             setUser(data.user)
-            setCartItems(data.user.cartItems)
+            setCartItems(data.user.cartItems || {})
         }
     } catch(error){
         // Silently handle 401 errors (expected when not logged in as user)
-        // Only set user to null if it's not a 401, or if it's 401 but we're not in seller mode
-        if (error.response?.status === 401) {
-            setUser(null)
-        } else {
-            setUser(null)
-        }
+        setUser(null)
+        setCartItems({})
     }
 }
 
@@ -137,6 +142,21 @@ const getCartAmount = () => {
     }, [])
 
     useEffect(() => {
+        // Don't run during initialization
+        if (isInitializing.current) {
+            return;
+        }
+
+        // Early return: Don't update cart if seller is logged in or user is not logged in
+        if (isSeller || !user) {
+            return;
+        }
+
+        // Early return: Don't update cart if cartItems is empty
+        if (!cartItems || Object.keys(cartItems).length === 0) {
+            return;
+        }
+
         const updateCart = async () => {
             try {
                 const { data } = await axios.post('/api/cart/update', {cartItems})
@@ -145,18 +165,14 @@ const getCartAmount = () => {
                 }
             } catch (error) {
                 // Silently handle 401 errors (expected when not logged in as user or when seller is logged in)
+                // Don't show toast for 401 errors as they're expected
                 if (error.response?.status !== 401) {
                     toast.error(error.message)
                 }
             }
         }
 
-        // Only update cart if user is logged in AND not a seller
-        // Sellers don't have user tokens, so cart updates will fail for them
-        if(user && !isSeller){
-            updateCart()
-        }
-
+        updateCart()
     }, [cartItems, user, isSeller])
 
     const value = {navigate, user, setUser, setIsSeller, isSeller, showUserLogin, setShowUserLogin, products, currency, addToCart, updateCartItem, removeFromCart, cartItems, searchQuery, setSearchQuery, getCartAmount, getCartCount, axios, fetchProducts, setCartItems}
