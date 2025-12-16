@@ -26,7 +26,12 @@ export default function AddProduct() {
                 formData.append('images', files[i])
             }
 
-            const {data} = await axios.post('/api/product/add', formData)
+            const {data} = await axios.post('/api/product/add', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                withCredentials: true
+            })
             if(data.success){
                 toast.success(data.message)
                 setName('')
@@ -36,10 +41,13 @@ export default function AddProduct() {
                 setOfferPrice('')
                 setFiles([])
             } else{
-                toast.error(data.message)
+                toast.error(data.message || 'Failed to add product')
             }
         } catch(error) {
-            toast.error(error.message)
+            // Show the actual error message from the server
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to add product'
+            toast.error(errorMessage)
+            console.error('Add product error:', error.response?.data || error)
         }
     }
     return (
