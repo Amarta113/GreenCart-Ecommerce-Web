@@ -67,7 +67,6 @@ GreenCart/
 
 
 
-```
 
 ## API Endpoints
 
