@@ -2,6 +2,8 @@
 
 A modern, full-featured ecommerce platform built with React and Node.js, featuring user authentication, product management, shopping cart, order processing, and Stripe payment integration.
 
+Live link: https://greencart-ecommerce-web-frontend-ikoebc338.vercel.app/
+
 ## Features
 
 ### Customer Features
